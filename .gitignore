@@ -1,0 +1,17 @@
+# Environment file with sensitive data
+.env
+
+# Backup directories
+backup/
+
+# Database data
+postgres/
+
+# Library/media files
+library/
+
+# Personal notes
+notes.txt
+
+# Generated override (if it's a symlink to parent project)
+docker-compose.override.yaml
