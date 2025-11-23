@@ -17,8 +17,11 @@ IMMICH_VERSION=release
 # Please use only the characters `A-Za-z0-9`, without special characters or spaces
 DB_PASSWORD=secret
 
+# Trust reverse proxy headers (for split-horizon DNS / local LAN proxy)
+# Get subnet: docker network inspect web | grep Subnet
+IMMICH_TRUSTED_PROXIES=172.22.0.0/16
+
 # The values below this line do not need to be changed
 ###################################################################################
 DB_USERNAME=postgres
 DB_DATABASE_NAME=immich
-
