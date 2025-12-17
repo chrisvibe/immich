@@ -15,3 +15,5 @@ notes.txt
 
 # Generated override (if it's a symlink to parent project)
 docker-compose.override.yaml
+
+tools/
