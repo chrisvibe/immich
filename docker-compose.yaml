@@ -7,6 +7,7 @@
 #
 # The compose file on main may not be compatible with the latest release.
 
+# TODO fix name + add volume of db in NAS + standardize across services path NAS convention. Add all NAS stuff to override
 name: immich
 
 services:
@@ -17,7 +18,7 @@ services:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     volumes:
-      - ${UPLOAD_LOCATION}:/data
+      - immich_upload:/data
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -68,5 +69,46 @@ services:
     shm_size: 128mb
     restart: always
 
+  # Automated backup sidecar (standardized across services; see also services/parvis, matrix, nextcloud).
+  # immich's photos already live on the NAS (immich_upload) and model-cache is reproducible, so the only
+  # LOCAL non-reproducible datastore is the Postgres DB. backup.sh delegates to backup_db.sh, which uses
+  # pg_dumpall (NOT a custom-format dump) so the VectorChord / pgvecto.rs vector types restore cleanly.
+  # Runs once at startup, then on BACKUP_CRON_SCHEDULE via dcron. Dumps land on the immich_backups volume
+  # (NAS-backed via overrides/immich.override.yaml).
+  # Manual ops:
+  #   docker compose exec backup /scripts/backup.sh                # back up now
+  #   docker compose exec backup ls -lh /backups/                  # list dumps
+  #   docker compose exec backup /scripts/restore_db.sh /backups/immich_db_YYYY-MM-DD_HH-MM-SS.sql.gz
+  #   (stop immich-server + machine-learning before a restore; start them after)
+  backup:
+    image: postgres:18-alpine
+    container_name: immich-backup
+    restart: unless-stopped
+    depends_on:
+      - database
+    environment:
+      - SERVICE_NAME=immich
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - BACKUP_DIR=/backups
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - BACKUP_CRON_SCHEDULE=${BACKUP_CRON_SCHEDULE:-0 3 * * *}
+    volumes:
+      - immich_backups:/backups
+      - ./scripts:/scripts:ro
+    command: ["sh", "/scripts/backup-entrypoint.sh"]
+
 volumes:
   model-cache:
+  immich_upload:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: ${NFS_OPTIONS}
+      device: ${UPLOAD_LOCATION}
+  # Base: plain local volume so immich runs standalone. The infra override swaps this
+  # to an NFS mount on the NAS (see overrides/immich.override.yaml).
+  immich_backups:
+    name: immich_backups
