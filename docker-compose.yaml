@@ -81,7 +81,8 @@ services:
   #   docker compose exec backup /scripts/restore_db.sh /backups/immich_db_YYYY-MM-DD_HH-MM-SS.sql.gz
   #   (stop immich-server + machine-learning before a restore; start them after)
   backup:
-    image: postgres:18-alpine
+    # Must match the vchord server Postgres MAJOR (PG14) so pg_dumpall round-trips (see BUG-1).
+    image: postgres:${POSTGRES_VERSION:-14-alpine}
     container_name: immich-backup
     restart: unless-stopped
     depends_on:

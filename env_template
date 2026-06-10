@@ -17,6 +17,11 @@ IMMICH_VERSION=release
 # Please use only the characters `A-Za-z0-9`, without special characters or spaces
 DB_PASSWORD=secret
 
+# Postgres image for the backup sidecar pg_dumpall client. Its MAJOR version
+# MUST match the immich database server (the vchord image, currently PG14)
+# or the dump will not restore. Bump this together with the server image.
+POSTGRES_VERSION=14-alpine
+
 # Trust reverse proxy headers (for split-horizon DNS / local LAN proxy)
 # Get subnet: docker network inspect web | grep Subnet
 IMMICH_TRUSTED_PROXIES=172.22.0.0/16
