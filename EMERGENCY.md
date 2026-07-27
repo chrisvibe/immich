@@ -1,7 +1,7 @@
 # Immich — Emergency Runbook
 
-**Current versions:** immich-server:v2.7.5 · immich-machine-learning:v2.7.5 · Postgres 14 (vectorchord)  
-**Previous versions:** v2.5.2 (both server and ML)
+**Current versions:** immich-server:v3.0.3 · immich-machine-learning:v3.0.3 · Postgres 14 (vectorchord)  
+**Previous versions:** v2.7.5 (both server and ML)
 
 > Server and ML versions must always match — upgrade/rollback both together.  
 > Version is hardcoded in compose, not in `.env` (`.env` IMMICH_VERSION is cosmetic only).
